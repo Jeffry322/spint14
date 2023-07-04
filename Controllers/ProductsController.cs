@@ -11,13 +11,18 @@ namespace ProductsWithRouting.Controllers
     {
         private List<Product> myProducts;
 
-        private int _index;
+        private IndexService _index;
 
-        public ProductsController(Data data)
+        public ProductsController(Data data, IndexService index)
         {
+            _index = index;
             myProducts = data.Products;
         }
 
+        [Route("Products/Index")]
+        [Route("Items/Index")]
+        [Route("Items")]
+        [Route("Products")]
         public IActionResult Index(int filterId, string filtername)
         {
             var filtered = myProducts;
@@ -51,22 +56,25 @@ namespace ProductsWithRouting.Controllers
                 .First();
             return View(filtered);
         }
+
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            _index = myProducts.FindIndex(p => p.Id == id);
-            var product = myProducts.Where(i => i.Id == id).First();
-            return View(product);
+            _index.Index = myProducts.FindIndex(p => p.Id == id);
+            return View(myProducts.Where(i => i.Id == id).First());
         }
+
         [HttpPost]
         public IActionResult Edit(Product product)
         {
-            myProducts[_index].Id = product.Id;
-            myProducts[_index].Description = product.Description;
-            myProducts[_index].Name = product.Name;
+            myProducts[_index.Index].Id = product.Id;
+            myProducts[_index.Index].Description = product.Description;
+            myProducts[_index.Index].Name = product.Name;
             return View(product);
         }
 
+        [Route("Products/Create")]
+        [Route("Products/New")]
         [HttpPost]
         public IActionResult Create(Product product)
         {
@@ -76,17 +84,17 @@ namespace ProductsWithRouting.Controllers
 
         public IActionResult Create()
         {
-            //Please, add your implementation of the method
-            return View(/*TODO: pass corresponding product here*/);
+            return View();
         }
 
         public IActionResult Delete(int id)
         {
             var deletedProduct = myProducts
-                .Where(x => x.Id == id)
-                .First();
-            myProducts.Remove(deletedProduct);
-            return View("Index", myProducts);
+               .Where(x => x.Id == id)
+               .First();
+
+             myProducts.Remove(deletedProduct);
+             return View("Index", myProducts);
         }
 
         public IActionResult Error()
