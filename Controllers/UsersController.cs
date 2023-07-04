@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProductsWithRouting.Models;
@@ -19,9 +16,15 @@ namespace ProductsWithRouting.Controllers
             myUsers = data.Users;
         }
 
-        public IActionResult Index(string id)
+        [HttpPost("users/index")]
+        public IActionResult Index([FromBody] string adminToken)
         {
-            return View(myUsers);
+            if (adminToken == "df2323eoT")
+            {
+                return View(myUsers);
+            }
+
+            return Unauthorized();
         }
 
         public IActionResult Error()

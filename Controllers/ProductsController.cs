@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using ProductsWithRouting.Models;
 using ProductsWithRouting.Services;
 
@@ -14,6 +11,8 @@ namespace ProductsWithRouting.Controllers
     {
         private List<Product> myProducts;
 
+        private int _index;
+
         public ProductsController(Data data)
         {
             myProducts = data.Products;
@@ -21,32 +20,58 @@ namespace ProductsWithRouting.Controllers
 
         public IActionResult Index(int filterId, string filtername)
         {
+            var filtered = myProducts;
+
+            if (!string.IsNullOrEmpty(filtername))
+            {
+                filtered = myProducts.Where(p => p.Description == filtername).ToList();
+
+                if (filterId > 0)
+                {
+                    if (filterId == 1)
+                    {
+                        filtered = filtered.OrderBy(p => p.Id).ToList();
+                    }
+                    else if (filterId == 2)
+                    {
+                        filtered = filtered.OrderByDescending(p => p.Id).ToList();
+                    }
+                }
+
+                return View(filtered);
+            }
+
             return View(myProducts);
         }
 
         public IActionResult View(int id)
         {
-            //Please, add your implementation of the method
-            return View(/*TODO: pass corresponding product here*/);
+            var filtered = myProducts
+                .Where(i => i.Id == id)
+                .First();
+            return View(filtered);
         }
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            //Please, add your implementation of the method
-            return View(/*TODO: pass corresponding product here*/);
-        } 
+            _index = myProducts.FindIndex(p => p.Id == id);
+            var product = myProducts.Where(i => i.Id == id).First();
+            return View(product);
+        }
         [HttpPost]
         public IActionResult Edit(Product product)
         {
-            //Please, add your implementation of the method
-            return View(/*TODO: pass corresponding product here*/);
-        } 
-        
+            myProducts[_index].Id = product.Id;
+            myProducts[_index].Description = product.Description;
+            myProducts[_index].Name = product.Name;
+            return View(product);
+        }
+
         [HttpPost]
         public IActionResult Create(Product product)
         {
-            //Please, add your implementation of the method
-            return View(/*TODO: pass corresponding product here*/);
+            myProducts.Add(product);
+            return View();
         }
 
         public IActionResult Create()
@@ -57,8 +82,11 @@ namespace ProductsWithRouting.Controllers
 
         public IActionResult Delete(int id)
         {
-            //Please, add your implementation of the method
-            return View("Index"/*TODO: pass corresponding product here*/);
+            var deletedProduct = myProducts
+                .Where(x => x.Id == id)
+                .First();
+            myProducts.Remove(deletedProduct);
+            return View("Index", myProducts);
         }
 
         public IActionResult Error()
